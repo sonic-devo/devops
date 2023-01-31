@@ -1,0 +1,41 @@
+CLUSTER_NB = 1
+DOMAIN = "sonicdev.org"
+IP_START = 10
+MEMORY = 2048
+NB_OF_NODES = 2
+
+$SCRIPT = <<-'END'
+	# Update the system
+	# yum update -y
+	# Add net-tools package
+	yum install -y net-tools bind-utils
+	# Create ansible user and its password
+	useradd -G wheel ansible 
+	echo ansible:sonicdev | chpasswd
+	# Allow password authentication on the machine
+	sed -i "s/#PasswordAuthentication yes/PasswordAuthentication yes/" /etc/ssh/sshd_config
+	sed -i "s/PasswordAuthentication no/#PasswordAuthentication no/" /etc/ssh/sshd_config
+	# Allow sudoers to connect as root without password
+	sed -i "s/%wheel\tALL=(ALL)\tALL/# %wheel\tALL=(ALL)\tALL/" /etc/sudoers
+	sed -i "s/# %wheel\tALL=(ALL)\tNOPASSWD: ALL/%wheel\tALL=(ALL)\tNOPASSWD: ALL/" /etc/sudoers
+	systemctl restart sshd
+END
+
+Vagrant.configure("2") do |config|
+
+	config.vm.box = "centos/7"
+
+	(1..NB_OF_NODES).each do |i|
+		config.vm.define "k8s#{CLUSTER_NB}-0#{i}.#{DOMAIN}" do |subconfig|
+			# subconfig.vm.box = BOX_IMAGE
+			subconfig.vm.hostname = "k8s#{CLUSTER_NB}-0#{i}.#{DOMAIN}"
+			subconfig.vm.network :private_network, ip: "192.168.56.#{i + IP_START}"
+			subconfig.vm.provider "virtualbox" do |v|
+				v.name = "k8s#{CLUSTER_NB}-0#{i}"
+				v.memory = 2048
+				v.cpus = 2
+			end
+			subconfig.vm.provision "shell", inline: $SCRIPT
+		end
+	end
+end

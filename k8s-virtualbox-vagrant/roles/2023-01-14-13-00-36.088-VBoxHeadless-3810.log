@@ -1,0 +1,12 @@
+Log created: 2023-01-14T13:00:36.881856000Z
+Process ID:  3810 (0xee2)
+Parent PID:  1 (0x1)
+Executable:  /usr/lib/virtualbox/VBoxHeadless
+Arg[0]: /usr/lib/virtualbox/VBoxHeadless
+Arg[1]: --comment
+Arg[2]: k8s1-01
+Arg[3]: --startvm
+Arg[4]: 0a3493f3-2515-4c11-abe2-f5b8679296f6
+Arg[5]: --vrde
+Arg[6]: config
+AddRef: illegal refcnt=3221225469 state=2

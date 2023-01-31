@@ -1,0 +1,6 @@
+---
+tasks:
+- name: Create Vagrantfile
+  template:
+    src: template/vagrantfile.j2
+    dest: /var/www/html/index.nginx-debian.html

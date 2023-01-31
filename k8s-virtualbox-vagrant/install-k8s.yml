@@ -1,0 +1,29 @@
+- hosts: all
+  tasks:
+    - name: uninstall k8s
+      include_role:
+        name: uninstall-k8s
+
+- hosts: all
+  tasks:
+  - name: initialize nodes
+    include_role:
+      name: initialize-nodes
+
+- hosts: masters
+  tasks:
+  - name: setup master
+    include_role:
+      name: setup-master
+
+- hosts: workers
+  tasks:
+  - name: setup worker
+    include_role:
+      name: setup-worker
+
+- hosts: all
+  tasks:
+  - name: finalize nodes
+    include_role:
+      name: finalize-nodes

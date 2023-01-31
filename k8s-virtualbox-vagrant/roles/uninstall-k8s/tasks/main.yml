@@ -1,0 +1,10 @@
+---
+- name: Remove file containing join command
+  local_action: file path=./join-command state=absent
+
+- name: Clean previous k8s installation
+  become: yes
+  command: kubeadm reset -f --v=5
+  ignore_errors: True
+  
+

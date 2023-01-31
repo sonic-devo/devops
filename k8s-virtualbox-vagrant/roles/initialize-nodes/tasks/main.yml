@@ -1,0 +1,63 @@
+---
+- name: install yum-utils
+  become: yes
+  yum:
+    name: yum-utils
+    state: latest
+    
+- name: Add the overlay module
+  become: yes
+  community.general.modprobe:
+    name: overlay
+    state: present
+    
+- name: Add the br_netfilter module
+  become: yes
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Install containerd
+  import_tasks: install-containerd.yml
+
+- name: Put SELinux in permissive mode
+  become: yes
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Add kubernetes repo
+  become: yes
+  copy:
+    src: files/kubernetes.repo
+    dest: /etc/yum.repos.d/kubernetes.repo
+    
+- name: Add kubelet package
+  become: yes
+  yum:
+    name: "{{packages}}"
+    state: latest
+  vars:
+    packages:
+    - kubelet
+    - kubeadm 
+    - kubectl
+
+- name: Disable swap
+  become: yes
+  command: swapoff -a
+
+- name: Comment swap in /etc/fstab to disable swap on next reboot
+  become: yes
+  lineinfile: 
+    path: /etc/fstab 
+    regexp: '^/swapfile' 
+    line: '#/swapfile none swap defaults 0 0'
+    backrefs: yes
+  
+- name: Start and enable kubelet service
+  become: yes
+  service:
+    name: kubelet
+    state: started
+    enabled: true

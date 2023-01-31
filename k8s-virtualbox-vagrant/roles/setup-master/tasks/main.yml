@@ -1,0 +1,23 @@
+---
+- name: Init Kubernetes cluster
+  become: yes
+  command: kubeadm init --v=5 --apiserver-advertise-address 192.168.56.11 --pod-network-cidr 10.244.0.0/16
+  
+- name: Setup kubeconfig for ansible user
+  become: yes
+  command: "{{ item }}"
+  with_items:
+  - mkdir -p /home/ansible/.kube
+  - cp /etc/kubernetes/admin.conf /home/ansible/.kube/config
+  - chown ansible:ansible /home/ansible/.kube/config  
+  
+- name: Add flannel CNI plugin
+  command: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/v0.20.2/Documentation/kube-flannel.yml
+  
+- name: Generate join command
+  become: yes
+  command: kubeadm token create --print-join-command
+  register: join_command
+
+- name: Copy join command to local file
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
